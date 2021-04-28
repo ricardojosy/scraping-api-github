@@ -19,7 +19,7 @@ public class SwaggerConfig {
 
 	private static final String BASE_PACKAGE = "br.com.rjf.scraping.api.controller";
 	private static final String API_TITULO = "API Github Scraping";
-	private static final String API_DESCRICAO = "API Rest que obtém dados quantitativos de repositórios públicos do github";
+	private static final String API_DESCRICAO = "API Rest to get numbers of files, lines and bytes are from given public Github repository";
 	private static final String API_VERSAO = "1.0.0";
 	private static final String CONTATO_NOME = "Ricardo Josy Ferreira";
 	private static final String CONTATO_GITHUB = "https://github.com/ricardojosy";
