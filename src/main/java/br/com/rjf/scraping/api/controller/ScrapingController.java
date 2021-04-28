@@ -22,7 +22,7 @@ public class ScrapingController {
 	@Autowired
 	private ScrapingService scrapingService;
 
-	@ApiOperation(value = "Scraping public repository of Github responses json")
+	@ApiOperation(value = "Scraping public repository of Github that responses json")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "OK", response = String.class),
 			@ApiResponse(code = 400, message = "Bad request", response = StandardError.class),
 			@ApiResponse(code = 401, message = "Unauthorized", response = StandardError.class),
