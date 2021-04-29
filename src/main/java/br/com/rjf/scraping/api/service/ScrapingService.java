@@ -10,6 +10,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
@@ -20,6 +22,7 @@ import br.com.rjf.scraping.api.exception.NotFoundException;
 @Service
 public class ScrapingService {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(ScrapingService.class);
 	private static final String BASE_URL_GITHUB = "https://github.com";
 	private static final String IDENTIFICADOR_DE_PASTA = "svg[class=octicon octicon-file-directory hx_color-icon-directory]";
 
@@ -65,7 +68,6 @@ public class ScrapingService {
 				computaArquivo(elemento.select("a[class=js-navigation-open Link--primary]").attr("href"));
 			} else {
 				String urlPasta = elemento.select("a[class=js-navigation-open Link--primary]").attr("href");
-//				LOGGER.info("URL DA PASTA: {}", urlPasta);
 				Document doc = Jsoup.connect(BASE_URL_GITHUB + urlPasta).get();
 				trataElementos(doc);
 			}
@@ -77,22 +79,36 @@ public class ScrapingService {
 
 		String[] partesUrl = url.substring(1).split("/");
 		String ulltimaParte = partesUrl[partesUrl.length - 1];
+		
 		String[] partesNome = ulltimaParte.split("\\.");
 		String extensao = partesNome[partesNome.length - 1];
-
-		String trechoComQtdLinhas = doc.select("div[class=text-mono f6 flex-auto pr-3 flex-order-2 flex-md-order-1]")
+		if (extensao.isEmpty()) {
+			extensao = "no extension";
+		}
+		
+		String divComLinhasTamanho = doc.select("div[class=text-mono f6 flex-auto pr-3 flex-order-2 flex-md-order-1]")
 				.text().replaceAll("executable file", "").replaceAll("Executable file", "");
-
+		
 		int linhas = 0;
 		try {
-			linhas = Integer.parseInt((trechoComQtdLinhas.split("lines")[0]).trim());
-		} catch (NumberFormatException e) {
+			linhas = Integer.parseInt((divComLinhasTamanho.split("lines")[0]).trim());
+		} catch (NumberFormatException nfe) {
 		}
 
-		String tamanhoStr = trechoComQtdLinhas.split("\\)")[1].trim();
-		String numeralDoTamanhoStr = tamanhoStr.split(" ")[0].trim();
-		String unidadeDoTamanho = tamanhoStr.split(" ")[1].trim();
-
+		String tamanhoStr = "";
+		String numeralDoTamanhoStr = "";
+		String unidadeDoTamanho = "";
+		try {
+			if (doc.select("span[class=file-info-divider]").isEmpty()) {
+				tamanhoStr = divComLinhasTamanho;
+			} else {
+				tamanhoStr = divComLinhasTamanho.split("\\)")[1].trim();
+			}
+			numeralDoTamanhoStr = tamanhoStr.split(" ")[0];
+			unidadeDoTamanho = tamanhoStr.split(" ")[1].trim();
+		} catch (Exception e) {
+			LOGGER.info("EXCECAO LANCADA AO TRATAR DADOS DE ARQUIVOS: {}", e.getMessage());
+		}
 		Integer tamanhoInteiroEmBytes = 0;
 		if (unidadeDoTamanho.equalsIgnoreCase("KB")) {
 			double d = Double.parseDouble(numeralDoTamanhoStr);
